@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HospManager - Prontuário & Histórico Médico</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-blue-600', 'text-blue-600', 'font-bold');
+                el.classList.add('border-transparent', 'text-slate-500', 'font-medium');
+            });
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.add('border-blue-600', 'text-blue-600', 'font-bold');
+            activeBtn.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between flex-shrink-0">
+            <div>
+                <!-- Brand Header -->
+                <div class="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800">
+                    <a href="index.html" class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-500/30">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-white tracking-tight">Hosp<span class="text-blue-400">Manager</span></span>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="p-4 space-y-1.5 text-sm font-medium">
+                    <a href="index.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        <span>Visão Geral</span>
+                    </a>
+
+                    <a href="pacientes.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span>Pacientes</span>
+                    </a>
+
+                    <a href="profissionais.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        <span>Profissionais de Saúde</span>
+                    </a>
+
+                    <a href="consultas.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Consultas</span>
+                    </a>
+
+                    <a href="internacoes.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <span>Internações</span>
+                    </a>
+
+                    <a href="quartos.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                        <span>Quartos & Leitos</span>
+                    </a>
+
+                    <a href="historico-medico.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-blue-600 text-white font-semibold shadow-sm">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <span>Prontuário & Histórico</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Profile & System Info -->
+            <div class="p-4 border-t border-slate-800 bg-slate-950/60">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-700 text-white font-semibold flex items-center justify-center text-sm border-2 border-blue-400">
+                        MF
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-semibold text-white truncate">Dra. Maria Fernanda</p>
+                        <p class="text-xs text-slate-400 truncate">Diretoria Clínica</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+
+            <!-- Topbar Header -->
+            <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-20">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-xl font-bold text-slate-800">Prontuário & Histórico Médico do Paciente</h1>
+                    <span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-medium border border-blue-200">
+                        Histórico Unificado
+                    </span>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <button onclick="openModal('recordModal')" class="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        <span>Novo Registro de Atendimento</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="p-8 space-y-6 flex-1">
+
+                <!-- Patient Profile Banner -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-bold flex items-center justify-center text-xl shadow-md">
+                                CS
+                            </div>
+                            <div>
+                                <div class="flex items-center space-x-3">
+                                    <h2 class="text-xl font-extrabold text-slate-900">Carlos Alberto da Silva</h2>
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">
+                                        Internado (Quarto 104)
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-1.5">
+                                    <span><strong>CPF:</strong> 123.456.789-00</span>
+                                    <span>•</span>
+                                    <span><strong>Idade:</strong> 45 anos (12/03/1981)</span>
+                                    <span>•</span>
+                                    <span><strong>Tipo Sanguíneo:</strong> A+</span>
+                                    <span>•</span>
+                                    <span><strong>Telefone:</strong> (31) 98765-4321</span>
+                                    <span>•</span>
+                                    <span><strong>E-mail:</strong> carlos.silva@email.com</span>
+                                </div>
+                                <div class="text-xs text-slate-600 mt-2 flex items-center">
+                                    <svg class="w-4 h-4 text-slate-400 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                    <span><strong>Endereço Cadastrado:</strong> Av. Afonso Pena, 1500, Apto 402, Funcionários - Belo Horizonte/MG - CEP: 30130-005</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Patient Switcher / Quick select -->
+                        <div class="border-t md:border-t-0 md:border-l border-slate-200 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center">
+                            <label class="text-xs font-semibold text-slate-500 mb-1">Visualizar Prontuário de Outro Paciente:</label>
+                            <select onchange="alert('Carregando prontuário do paciente selecionado...')" class="px-3 py-2 border border-slate-300 rounded-lg text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                <option selected>Carlos Alberto da Silva (#PAC-001)</option>
+                                <option>Ana Clara Souza (#PAC-002)</option>
+                                <option>Roberto Carlos Dias (#PAC-003)</option>
+                                <option>Mariana Lima Ferreira (#PAC-004)</option>
+                                <option>Lucas Vinicius Santos (#PAC-005)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Navigation: obterRegistros(), obterConsultas(), obterInternacoes() -->
+                <div class="border-b border-slate-200">
+                    <nav class="flex space-x-8">
+                        <button id="btn-tab-registros" onclick="switchTab('tab-registros')" class="tab-btn py-3 px-1 border-b-2 border-blue-600 text-blue-600 font-bold text-sm flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span>Linha do Tempo de Atendimentos (Registros)</span>
+                            <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-bold">4</span>
+                        </button>
+                        <button id="btn-tab-consultas" onclick="switchTab('tab-consultas')" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span>Consultas Realizadas</span>
+                            <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">2</span>
+                        </button>
+                        <button id="btn-tab-internacoes" onclick="switchTab('tab-internacoes')" class="tab-btn py-3 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 font-medium text-sm flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            <span>Internações Hospitalares</span>
+                            <span class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">1</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Tab 1: Registros de Atendimento (Classe RegistroAtendimento) -->
+                <div id="tab-registros" class="tab-content space-y-6">
+                    <div class="relative border-l-2 border-blue-200 ml-4 pl-6 space-y-8">
+
+                        <!-- Item 1: Evolução Médica -->
+                        <div class="relative group">
+                            <div class="absolute -left-[35px] top-1.5 w-5 h-5 rounded-full bg-blue-600 border-4 border-white shadow"></div>
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:border-blue-300 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">Evolução Médica Diária</span>
+                                        <span class="text-xs text-slate-400 font-mono">Registro #REG-401</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500 font-medium">06/10/2026 às 09:30</span>
+                                </div>
+                                <h4 class="text-sm font-bold text-slate-900">Evolução Clínica de Rotina - Quarto 104</h4>
+                                <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+                                    Paciente no 4º dia pós-angioplastia coronária. Apresenta estabilidade hemodinâmica satisfatória (PA: 125/82 mmHg, FC: 72 bpm, Spo2: 98% em ar ambiente). Sem queixas de dor precordial nas últimas 24 horas. Pulso periférico amplo e simétrico. Ferida operatória limpa e sem sinais flogísticos.
+                                </p>
+                                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                    <span><strong>Responsável:</strong> Dr. Emanuel Phillipe (Cardiologia - CRM/MG 48.291)</span>
+                                    <span class="text-indigo-600 font-semibold">Vinculado à Internação #INT-809</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 2: Prescrição Farmacológica -->
+                        <div class="relative group">
+                            <div class="absolute -left-[35px] top-1.5 w-5 h-5 rounded-full bg-emerald-600 border-4 border-white shadow"></div>
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:border-emerald-300 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">Prescrição Farmacológica</span>
+                                        <span class="text-xs text-slate-400 font-mono">Registro #REG-398</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500 font-medium">05/10/2026 às 18:00</span>
+                                </div>
+                                <h4 class="text-sm font-bold text-slate-900">Ajuste de Terapia Medicamentosa</h4>
+                                <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+                                    1. Ácido Acetilsalicílico (AAS) 100mg - 1 comprimido via oral após o almoço.<br>
+                                    2. Clopidogrel 75mg - 1 comprimido via oral uma vez ao dia.<br>
+                                    3. Atorvastatina 40mg - 1 comprimido via oral à noite.<br>
+                                    4. Enoxaparina sódica 40mg SC a cada 24h (última dose programada para 07/10).
+                                </p>
+                                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                    <span><strong>Responsável:</strong> Dr. Emanuel Phillipe (CRM/MG 48.291)</span>
+                                    <span class="text-indigo-600 font-semibold">Vinculado à Internação #INT-809</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 3: Exame / Triagem Inicial -->
+                        <div class="relative group">
+                            <div class="absolute -left-[35px] top-1.5 w-5 h-5 rounded-full bg-purple-600 border-4 border-white shadow"></div>
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:border-purple-300 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800">Exame & Triagem</span>
+                                        <span class="text-xs text-slate-400 font-mono">Registro #REG-382</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500 font-medium">02/10/2026 às 11:15</span>
+                                </div>
+                                <h4 class="text-sm font-bold text-slate-900">Eletrocardiograma de Admissão & Triagem</h4>
+                                <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+                                    ECG realizado: Ritmo sinusal regular, sem novas alterações do segmento ST. Enzimas cardíacas troponina I coletadas com curva descendente favorável. Indicada admissão para monitoramento pós-cateterismo.
+                                </p>
+                                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                    <span><strong>Responsável:</strong> Equipe de Triagem Cardíaca</span>
+                                    <span class="text-indigo-600 font-semibold">Vinculado à Internação #INT-809</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 4: Consulta Ambulatorial Prévia -->
+                        <div class="relative group">
+                            <div class="absolute -left-[35px] top-1.5 w-5 h-5 rounded-full bg-amber-600 border-4 border-white shadow"></div>
+                            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:border-amber-300 transition">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">Consulta Ambulatorial</span>
+                                        <span class="text-xs text-slate-400 font-mono">Registro #REG-310</span>
+                                    </div>
+                                    <span class="text-xs text-slate-500 font-medium">20/09/2026 às 14:30</span>
+                                </div>
+                                <h4 class="text-sm font-bold text-slate-900">Consulta de Avaliação Cardiológica Eletiva</h4>
+                                <p class="text-xs text-slate-700 mt-2 leading-relaxed">
+                                    Paciente queixava-se de cansaço aos médios esforços há 3 semanas. Solicitados exames de esforço e ecocardiograma com dopler.
+                                </p>
+                                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                    <span><strong>Responsável:</strong> Dr. Emanuel Phillipe (CRM/MG 48.291)</span>
+                                    <span class="text-blue-600 font-semibold">Vinculado à Consulta #CNS-1980</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Tab 2: Consultas Realizadas (Método obterConsultas()) -->
+                <div id="tab-consultas" class="tab-content space-y-4 hidden">
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="px-5 py-3.5">ID / Data</th>
+                                    <th class="px-5 py-3.5">Profissional</th>
+                                    <th class="px-5 py-3.5">Especialidade</th>
+                                    <th class="px-5 py-3.5">Motivo</th>
+                                    <th class="px-5 py-3.5">Status</th>
+                                    <th class="px-5 py-3.5">Observações Médicas</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-5 py-4 font-bold text-blue-700">#CNS-1980<div class="text-xs text-slate-500 font-normal">20/09/2026 • 14:30</div></td>
+                                    <td class="px-5 py-4 font-semibold text-slate-900">Dr. Emanuel Phillipe</td>
+                                    <td class="px-5 py-4 text-xs text-blue-600 font-semibold">Cardiologia</td>
+                                    <td class="px-5 py-4 text-xs">Cansaço e dispneia a esforços moderados</td>
+                                    <td class="px-5 py-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Concluída</span></td>
+                                    <td class="px-5 py-4 text-xs text-slate-600">Solicitada cineangiocoronariografia eletiva.</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-5 py-4 font-bold text-blue-700">#CNS-1721<div class="text-xs text-slate-500 font-normal">14/05/2026 • 10:00</div></td>
+                                    <td class="px-5 py-4 font-semibold text-slate-900">Dr. Luiz Rithiely</td>
+                                    <td class="px-5 py-4 text-xs text-amber-600 font-semibold">Clínica Médica</td>
+                                    <td class="px-5 py-4 text-xs">Consulta de rotina anual</td>
+                                    <td class="px-5 py-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Concluída</span></td>
+                                    <td class="px-5 py-4 text-xs text-slate-600">Perfil lipídico alterado. Encaminhado à cardiologia.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Internações Hospitalares (Método obterInternacoes()) -->
+                <div id="tab-internacoes" class="tab-content space-y-4 hidden">
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="px-5 py-3.5">ID Internação</th>
+                                    <th class="px-5 py-3.5">Quarto / Leito</th>
+                                    <th class="px-5 py-3.5">Profissional Responsável</th>
+                                    <th class="px-5 py-3.5">Data Entrada</th>
+                                    <th class="px-5 py-3.5">Previsão Alta</th>
+                                    <th class="px-5 py-3.5">Alta Efetiva</th>
+                                    <th class="px-5 py-3.5">Status</th>
+                                    <th class="px-5 py-3.5">Observações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-5 py-4 font-bold text-indigo-700">#INT-809</td>
+                                    <td class="px-5 py-4 font-semibold text-slate-900">Quarto 104 (1º Andar)</td>
+                                    <td class="px-5 py-4 text-xs font-medium text-slate-800">Dr. Emanuel Phillipe</td>
+                                    <td class="px-5 py-4 text-xs text-slate-700">02/10/2026</td>
+                                    <td class="px-5 py-4 text-xs text-slate-700">08/10/2026</td>
+                                    <td class="px-5 py-4 text-xs text-amber-600 font-bold">Em internação</td>
+                                    <td class="px-5 py-4"><span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Ativa</span></td>
+                                    <td class="px-5 py-4 text-xs text-slate-600">Pós-angioplastia com stent farmacológico. Estável.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal: Novo Registro de Atendimento (Classe RegistroAtendimento) -->
+    <div id="recordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                <h3 class="text-lg font-bold text-slate-900">Novo Registro de Atendimento</h3>
+                <button onclick="closeModal('recordModal')" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form class="space-y-4 pt-4" onsubmit="event.preventDefault(); closeModal('recordModal'); alert('Registro de atendimento incluído no prontuário!');">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de Registro (tipo: TipoRegistro) *</label>
+                        <select required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="EVOLUCAO">Evolução Médica</option>
+                            <option value="PRESCRICAO">Prescrição Farmacológica</option>
+                            <option value="EXAME">Resultado de Exame</option>
+                            <option value="TRIAGEM">Triagem / Sinais Vitais</option>
+                            <option value="ALTA">Parecer de Alta</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Data e Hora (dataHora) *</label>
+                        <input type="datetime-local" required value="2026-10-06T15:30" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Vincular a Consulta (opcional)</label>
+                        <select class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="">Nenhuma consulta</option>
+                            <option value="1980">Consulta #CNS-1980 (20/09/2026)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Vincular a Internação (opcional)</label>
+                        <select class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="809" selected>Internação #INT-809 (Ativa - Q. 104)</option>
+                            <option value="">Nenhuma internação</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Descrição do Atendimento (descricao: string) *</label>
+                    <textarea rows="4" required placeholder="Insira o relato clínico, conduta adotada, evolução ou prescrição atualizada..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+                    O registro será indexado na linha do tempo cronológica do prontuário do paciente.
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('recordModal')" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg">Salvar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
