@@ -23,4 +23,3 @@ public class HistoricoProvidersConfig {
         return pacienteId -> List.of();
     }
 }
-    
