@@ -19,6 +19,7 @@ import com.praticamodular.HospManager.dto.*;
 import com.praticamodular.HospManager.model.enums.StatusConsulta;
 import com.praticamodular.HospManager.service.ConsultaService;
 
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "basicAuth")
 @RestController
 @RequestMapping("/consultas")
 @Tag(name = "Consultas", description = "Agendamento e andamento das consultas (rotina e especializada)")

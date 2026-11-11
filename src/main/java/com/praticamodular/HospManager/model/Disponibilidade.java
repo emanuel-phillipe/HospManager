@@ -44,9 +44,10 @@ public class Disponibilidade {
     }
 
     public boolean cobre(LocalDate data, LocalTime horario) {
-        return data.getDayOfWeek() == diaSemana
+        return data != null && horario != null && horaInicio != null && horaFim != null
+                && data.getDayOfWeek() == diaSemana
                 && !horario.isBefore(horaInicio)
-                && !horario.isAfter(horaFim);
+                && horario.isBefore(horaFim);
     }
 
 

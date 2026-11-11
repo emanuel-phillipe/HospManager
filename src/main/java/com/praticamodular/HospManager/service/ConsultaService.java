@@ -25,7 +25,8 @@ import com.praticamodular.HospManager.model.enums.TipoRegistro;
 import com.praticamodular.HospManager.repository.*;
 
 @Service
-public class ConsultaService implements AtendimentoHistoricoProvider {
+public class ConsultaService {
+    private final AgendaService agenda;
     private final ConsultaRepository consultas;
     private final PacienteRepository pacientes;
     private final HistoricoMedicoRepository historicos;
@@ -35,7 +36,8 @@ public class ConsultaService implements AtendimentoHistoricoProvider {
 
     public ConsultaService(ConsultaRepository consultas, PacienteRepository pacientes,
             HistoricoMedicoRepository historicos, ProfissionalRepository profissionais,
-            ConsultaMapper mapper, MongoTemplate mongo) {
+            ConsultaMapper mapper, MongoTemplate mongo, AgendaService agenda) {
+        this.agenda = agenda;
         this.consultas = consultas;
         this.pacientes = pacientes;
         this.historicos = historicos;
@@ -45,6 +47,10 @@ public class ConsultaService implements AtendimentoHistoricoProvider {
     }
 
     public ConsultaResponse agendar(ConsultaRequest dados) {
+        return agenda.executar(() -> agendarNaAgenda(dados));
+    }
+
+    private ConsultaResponse agendarNaAgenda(ConsultaRequest dados) {
         Paciente paciente = pacientes.findById(dados.pacienteId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Paciente não encontrado"));
         if (!paciente.isAtivo()) {
@@ -54,6 +60,11 @@ public class ConsultaService implements AtendimentoHistoricoProvider {
                 .filter(ProfissionalSaude::isAtivo)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado"));
 
+        agenda.carregar(medico);
+        if (medico.possuiConflito(dados.data(), dados.horario())) {
+            throw new ConflitoException("Profissional já possui atendimento neste horário");
+        }
+        agenda.validarPaciente(dados.pacienteId(), dados.data(), dados.horario(), null);
         Consulta consulta = mapper.nova(dados);
         consulta.definirMedico(medico);
         consulta.validarCondicoes();
@@ -91,7 +102,17 @@ public class ConsultaService implements AtendimentoHistoricoProvider {
 
     public ConsultaResponse confirmar(String id) { return alterar(id, Consulta::confirmar); }
 
-    public ConsultaResponse iniciar(String id) { return alterar(id, Consulta::iniciar); }
+    public ConsultaResponse iniciar(String id) {
+        return alterar(id, consulta -> {
+            ProfissionalSaude medico = profissionais.findById(consulta.getResponsavelId())
+                    .filter(ProfissionalSaude::isAtivo)
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Médico não encontrado ou inativo"));
+            agenda.carregar(medico);
+            consulta.definirMedico(medico);
+            agenda.validarPacienteEmAtendimento(consulta.getPacienteId(), consulta.getId());
+            consulta.iniciar();
+        });
+    }
 
     public ConsultaResponse cancelar(String id) { return alterar(id, Consulta::cancelar); }
 
@@ -100,11 +121,20 @@ public class ConsultaService implements AtendimentoHistoricoProvider {
     }
 
     public ConsultaResponse concluir(String id, String observacoes) {
+        return agenda.executar(() -> concluirNaAgenda(id, observacoes));
+    }
+
+    private ConsultaResponse concluirNaAgenda(String id, String observacoes) {
         Consulta consulta = encontrar(id);
         HistoricoMedico historico = historicos.findByPacienteId(consulta.getPacienteId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Histórico médico não encontrado"));
 
-        consulta.concluir(observacoes);
+        ProfissionalSaude responsavel = profissionais.findById(consulta.getResponsavelId())
+                .filter(ProfissionalSaude::isAtivo)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Profissional não encontrado ou inativo"));
+        consulta.definirMedico(responsavel);
+        if (responsavel instanceof MedicoClinicoGeral clinico) clinico.registrarConsulta(consulta, observacoes);
+        else consulta.concluir(observacoes);
 
         RegistroAtendimento registro = new RegistroAtendimento();
         registro.setId(UUID.randomUUID().toString());
@@ -119,16 +149,17 @@ public class ConsultaService implements AtendimentoHistoricoProvider {
         return mapper.resposta(salva);
     }
 
-    @Override
     public List<ConsultaResponse> listarPorPaciente(String pacienteId) {
         return consultas.findByPacienteIdOrderByDataDescHorarioDesc(pacienteId).stream()
                 .map(mapper::resposta).toList();
     }
 
     private ConsultaResponse alterar(String id, Consumer<Consulta> acao) {
-        Consulta consulta = encontrar(id);
-        acao.accept(consulta);
-        return mapper.resposta(consultas.save(consulta));
+        return agenda.executar(() -> {
+            Consulta consulta = encontrar(id);
+            acao.accept(consulta);
+            return mapper.resposta(consultas.save(consulta));
+        });
     }
 
     private Consulta encontrar(String id) {

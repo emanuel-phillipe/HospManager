@@ -13,6 +13,19 @@ public class HistoricoMedico  {
     private List<RegistroAtendimento> registros = new ArrayList<>();
 
 
+    @org.springframework.data.annotation.Transient
+    private List<Atendimento> atendimentos = new ArrayList<>();
+    @org.springframework.data.annotation.Transient
+    private List<Internacao> internacoes = new ArrayList<>();
+
+    public List<Atendimento> obterAtendimentos() { return List.copyOf(atendimentos); }
+    public List<Internacao> obterInternacoes() { return List.copyOf(internacoes); }
+    public List<RegistroAtendimento> obterRegistros() { return List.copyOf(registros); }
+    public void carregarRelacionamentos(List<? extends Atendimento> atendimentos, List<Internacao> internacoes) {
+        this.atendimentos = new ArrayList<>(atendimentos);
+        this.internacoes = new ArrayList<>(internacoes);
+    }
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getPacienteId() { return pacienteId; }

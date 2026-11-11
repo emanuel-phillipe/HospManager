@@ -1,6 +1,7 @@
 package com.praticamodular.HospManager.service;
 
 import java.util.UUID;
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ import com.praticamodular.HospManager.validation.CpfValidator;
 
 @Service
 public class PacienteService {
+    private final AgendaService agenda;
+    private final InternacaoRepository repositorioInternacoes;
     private final PacienteRepository pacientes;
     private final HistoricoMedicoRepository historicos;
     private final PacienteMapper mapper;
@@ -22,7 +25,9 @@ public class PacienteService {
 
     public PacienteService(PacienteRepository pacientes, HistoricoMedicoRepository historicos,
             PacienteMapper mapper, AtendimentoHistoricoProvider atendimentos,
-            InternacaoHistoricoProvider internacoes) {
+            InternacaoHistoricoProvider internacoes, AgendaService agenda, InternacaoRepository repositorioInternacoes) {
+        this.agenda = agenda;
+        this.repositorioInternacoes = repositorioInternacoes;
         this.pacientes = pacientes;
         this.historicos = historicos;
         this.mapper = mapper;
@@ -88,9 +93,12 @@ public class PacienteService {
         Paciente paciente = encontrar(id);
         HistoricoMedico historico = historicos.findByPacienteId(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Histórico médico não encontrado"));
-        return new HistoricoMedicoResponse(historico.getId(), mapper.resumo(paciente),
-                atendimentos.listarPorPaciente(id), internacoes.listarPorPaciente(id),
-                historico.getRegistros().stream().map(mapper::registro).toList());
+        historico.carregarRelacionamentos(agenda.porPaciente(id), repositorioInternacoes.findByPacienteIdOrderByDataEntradaDesc(id));
+        paciente.definirHistorico(historico);
+        List<?> todos = atendimentos.listarPorPaciente(id);
+        return new HistoricoMedicoResponse(paciente.obterHistorico().getId(), mapper.resumo(paciente),
+                todos.stream().filter(ConsultaResponse.class::isInstance).toList(), internacoes.listarPorPaciente(id),
+                historico.obterRegistros().stream().map(mapper::registro).toList(), todos);
     }
 
     private Paciente encontrar(String id) {

@@ -12,6 +12,7 @@ import com.praticamodular.HospManager.dto.*;
 import com.praticamodular.HospManager.model.enums.StatusInternacao;
 import com.praticamodular.HospManager.service.InternacaoService;
 
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "basicAuth")
 @RestController
 @RequestMapping("/internacoes")
 @Tag(name = "Internações", description = "Admissão, acompanhamento e alta hospitalar")

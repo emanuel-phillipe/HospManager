@@ -20,13 +20,16 @@ import com.praticamodular.HospManager.dto.AltaRequest;
 
 @Service
 public class InternacaoService implements InternacaoHistoricoProvider {
+    private final com.praticamodular.HospManager.repository.ProfissionalRepository profissionais;
     private final InternacaoRepository internacoes;
     private final PacienteRepository pacientes;
     private final QuartoRepository quartos;
     private final QuartoService quartoService;
 
     public InternacaoService(InternacaoRepository internacoes, PacienteRepository pacientes,
-            QuartoRepository quartos, QuartoService quartoService) {
+            QuartoRepository quartos, QuartoService quartoService,
+            com.praticamodular.HospManager.repository.ProfissionalRepository profissionais) {
+        this.profissionais = profissionais;
         this.internacoes = internacoes;
         this.pacientes = pacientes;
         this.quartos = quartos;
@@ -126,6 +129,8 @@ public class InternacaoService implements InternacaoHistoricoProvider {
     }
 
     private void validarDados(InternacaoRequest dados) {
+        profissionais.findById(dados.profissionalId()).filter(com.praticamodular.HospManager.model.ProfissionalSaude::isAtivo)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Profissional responsável não encontrado ou inativo"));
         if (dados.dataPrevistaAlta().isBefore(dados.dataEntrada())) {
             throw new RegraNegocioException("A data prevista de alta não pode ser anterior à data de entrada");
         }

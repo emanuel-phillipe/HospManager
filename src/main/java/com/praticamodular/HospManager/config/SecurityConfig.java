@@ -14,7 +14,11 @@ public class SecurityConfig {
     public SecurityFilterChain seguranca(HttpSecurity http,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver erros) throws Exception {
         return http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/pacientes", "/pacientes/**"))
+                .httpBasic(org.springframework.security.config.Customizer.withDefaults())
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/pacientes", "/pacientes/**",
+                        "/profissionais", "/profissionais/**", "/consultas", "/consultas/**",
+                        "/internacoes", "/internacoes/**", "/quartos", "/quartos/**",
+                        "/procedimentos", "/procedimentos/**", "/emergencias", "/emergencias/**"))
                 .exceptionHandling(excecoes -> excecoes
                         .authenticationEntryPoint((request, response, erro) ->
                                 erros.resolveException(request, response, null, erro))

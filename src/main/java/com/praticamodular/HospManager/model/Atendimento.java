@@ -21,6 +21,15 @@ public abstract class Atendimento {
         return responsavel == null ? null : responsavel.getId();
     }
 
+    public boolean estaEmAndamento() {
+        return switch (this) {
+            case Consulta c -> c.getStatus() == com.praticamodular.HospManager.model.enums.StatusConsulta.EM_ATENDIMENTO;
+            case ProcedimentoCirurgico p -> p.getStatus() == com.praticamodular.HospManager.model.enums.StatusProcedimento.EM_ANDAMENTO;
+            case AtendimentoEmergencia e -> e.getStatus() == com.praticamodular.HospManager.model.enums.StatusEmergencia.EM_ATENDIMENTO;
+            default -> false;
+        };
+    }
+
     protected void exigirDataHoraFutura() {
         if (data == null || horario == null) {
             throw new RegraNegocioException("Data e horário são obrigatórios");

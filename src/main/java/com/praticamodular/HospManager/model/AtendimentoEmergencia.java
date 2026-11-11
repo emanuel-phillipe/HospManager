@@ -14,11 +14,16 @@ import java.time.LocalTime;
  * Atendimento de emergência. Data/horário herdados de Atendimento representam a CHEGADA do paciente.
  * Ordem natural (compareTo): maior prioridade primeiro; empate -> quem chegou antes; empate -> menor id.
  */
+@org.springframework.data.mongodb.core.mapping.Document("emergencias")
 public class AtendimentoEmergencia extends Atendimento implements Comparable<AtendimentoEmergencia> {
 
-    private final PrioridadeEmergencia prioridade;
+    private PrioridadeEmergencia prioridade;
     private StatusEmergencia status = StatusEmergencia.AGUARDANDO_AVALIACAO;
+    private String medicoId;
+    @org.springframework.data.annotation.Transient
     private ProfissionalSaude medico; // 0..1: só definido ao iniciar o atendimento
+
+    public AtendimentoEmergencia() {}
 
     public AtendimentoEmergencia(String id, Paciente paciente, PrioridadeEmergencia prioridade,
                                  LocalDateTime chegada, String observacoes) {
@@ -43,14 +48,16 @@ public class AtendimentoEmergencia extends Atendimento implements Comparable<Ate
      */
     public void iniciarAtendimento(ProfissionalSaude medico) {
         validarTransicao(StatusEmergencia.EM_ATENDIMENTO);
-        if (medico == null) {
+        if (medico == null || !medico.isAtivo()) {
             throw new RegraNegocioException("É necessário um profissional responsável para iniciar o atendimento");
         }
-        if (medico.possuiConflito(LocalDate.now(), LocalTime.now())) {
+        if (medico.possuiAtendimentoEmAndamento(id) || medico.possuiConflito(LocalDate.now(), LocalTime.now())) {
             throw new RegraNegocioException("Profissional já possui outro atendimento neste horário");
         }
         this.status = StatusEmergencia.EM_ATENDIMENTO;
         this.medico = medico;
+        this.medicoId = medico.getId();
+        medico.registrarAtendimento(this);
     }
 
     public void concluir(String obs) {
@@ -71,7 +78,7 @@ public class AtendimentoEmergencia extends Atendimento implements Comparable<Ate
         if (pacienteId == null || pacienteId.isBlank()) throw new RegraNegocioException("Todo atendimento exige um paciente");
         if (prioridade == null) throw new RegraNegocioException("Prioridade é obrigatória");
         if (data == null || horario == null) throw new RegraNegocioException("Data/horário de chegada são obrigatórios");
-        if (status != StatusEmergencia.AGUARDANDO_AVALIACAO && medico == null) {
+        if (status != StatusEmergencia.AGUARDANDO_AVALIACAO && (medicoId == null || medicoId.isBlank())) {
             throw new RegraNegocioException("Atendimento em andamento/concluído exige profissional responsável");
         }
     }
@@ -106,6 +113,9 @@ public class AtendimentoEmergencia extends Atendimento implements Comparable<Ate
         if (c != 0) return c;
         return this.id.compareTo(o.id);
     }
+
+    @Override
+    public String getResponsavelId() { return medicoId; }
 
     public PrioridadeEmergencia getPrioridade() { return prioridade; }
     public StatusEmergencia getStatus() { return status; }

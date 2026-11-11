@@ -26,7 +26,7 @@ public class ConsultaEspecializada extends Consulta {
         if (especialidade == null) {
             throw new RegraNegocioException("Especialidade é obrigatória na consulta especializada");
         }
-        if (medico.getEspecialidade() != especialidade) {
+        if (!medico.atendeEspecialidade(especialidade)) {
             throw new RegraNegocioException("O médico não atende a especialidade " + especialidade);
         }
     }

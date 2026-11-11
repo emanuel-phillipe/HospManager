@@ -17,16 +17,21 @@ import java.time.LocalTime;
  * Ordem de uso esperada pelo serviço: validarCondicoes() -> cirurgiao.registrarProcedimento(this).
  * (validarCondicoes checa conflito de agenda, então deve rodar antes de registrar o procedimento no cirurgião.)
  */
+@org.springframework.data.mongodb.core.mapping.Document("procedimentos")
 public class ProcedimentoCirurgico extends Atendimento {
 
-    private final Cirurgiao cirurgiao;
-    private final String descricao;
-    private final TipoCirurgia tipoCirurgia;
+    @org.springframework.data.annotation.Transient
+    private Cirurgiao cirurgiao;
+    private String cirurgiaoId;
+    private String descricao;
+    private TipoCirurgia tipoCirurgia;
     private String observacoesPreOperatorias;
     private String observacoesPosOperatorias;
     private LocalDate dataEfetiva;
     private LocalTime horarioEfetivo;
     private StatusProcedimento status = StatusProcedimento.AGENDADO;
+
+    public ProcedimentoCirurgico() {}
 
     public ProcedimentoCirurgico(String id, Paciente paciente, LocalDate data, LocalTime horario,
                                  String observacoes, Cirurgiao cirurgiao, String descricao,
@@ -37,6 +42,7 @@ public class ProcedimentoCirurgico extends Atendimento {
         this.horario = horario;
         this.observacoes = observacoes;
         this.cirurgiao = cirurgiao;
+        this.cirurgiaoId = cirurgiao == null ? null : cirurgiao.getId();
         this.descricao = descricao;
         this.tipoCirurgia = tipoCirurgia;
         this.observacoesPreOperatorias = observacoesPreOperatorias;
@@ -47,7 +53,10 @@ public class ProcedimentoCirurgico extends Atendimento {
 
     public void iniciar() {
         validarTransicao(StatusProcedimento.EM_ANDAMENTO);
-        validarDadosObrigatorios();
+        validarCondicoes();
+        if (cirurgiao.possuiAtendimentoEmAndamento(id)) {
+            throw new RegraNegocioException("Cirurgião já está em outro atendimento");
+        }
         if (tipoCirurgia.exigePreOperatorio() && estaVazio(observacoesPreOperatorias)) {
             throw new RegraNegocioException(
                     "Cirurgia " + tipoCirurgia + " exige observações pré-operatórias para iniciar");
@@ -100,14 +109,14 @@ public class ProcedimentoCirurgico extends Atendimento {
         if (tipoCirurgia != TipoCirurgia.EMERGENCIAL && !cirurgiao.estaDisponivel(data, horario)) {
             throw new RegraNegocioException("Cirurgião indisponível em " + data + " " + horario);
         }
-        if (cirurgiao.possuiConflito(data, horario)) {
+        if (cirurgiao.possuiConflito(data, horario, id)) {
             throw new RegraNegocioException("Cirurgião já possui compromisso em " + data + " " + horario);
         }
     }
 
     private void validarDadosObrigatorios() {
         if (pacienteId == null || pacienteId.isBlank()) throw new RegraNegocioException("Paciente é obrigatório");
-        if (cirurgiao == null) throw new RegraNegocioException("Cirurgião é obrigatório");
+        if (cirurgiao == null || !cirurgiao.isAtivo()) throw new RegraNegocioException("Cirurgião é obrigatório");
         if (tipoCirurgia == null) throw new RegraNegocioException("Tipo de cirurgia é obrigatório");
         if (estaVazio(descricao)) throw new RegraNegocioException("Descrição é obrigatória");
         if (data == null || horario == null) throw new RegraNegocioException("Data/horário são obrigatórios");
@@ -129,6 +138,13 @@ public class ProcedimentoCirurgico extends Atendimento {
     @Override
     public ProfissionalSaude getResponsavel() {
         return cirurgiao;
+    }
+
+    @Override
+    public String getResponsavelId() { return cirurgiaoId; }
+    public void carregarCirurgiao(Cirurgiao cirurgiao) {
+        if (!java.util.Objects.equals(cirurgiaoId, cirurgiao.getId())) throw new IllegalArgumentException("Cirurgião incorreto");
+        this.cirurgiao = cirurgiao;
     }
 
     public Cirurgiao getCirurgiao() { return cirurgiao; }

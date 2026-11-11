@@ -90,3 +90,5 @@ Mapa visual de leitos por andar (Enfermaria Geral, Apartamentos e UTI), cálculo
 Prontuário unificado do paciente contendo seletor de pacientes, perfil completo e abas navegáveis: Linha do Tempo de Atendimentos (`RegistroAtendimento`), Consultas Realizadas e Histórico de Internações.
 
 ![Prontuário e Histórico](screenshots/historico_medico.png)
+
+---

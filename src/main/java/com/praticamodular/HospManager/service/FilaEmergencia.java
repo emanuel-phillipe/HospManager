@@ -44,7 +44,8 @@ public class FilaEmergencia {
     public AtendimentoEmergencia chamarProximo(ProfissionalSaude medico) {
         AtendimentoEmergencia proximo = proximo()
                 .orElseThrow(() -> new NoSuchElementException("Não há pacientes aguardando"));
-        boolean ocupado = emAtendimento().stream().anyMatch(a -> a.getResponsavel() == medico);
+        boolean ocupado = emAtendimento().stream().anyMatch(a -> (a.getResponsavel() == medico || (medico != null && medico.getId() != null
+                && medico.getId().equals(a.getResponsavelId()))));
         if (ocupado) {
             throw new RegraNegocioException("Profissional já está em outro atendimento de emergência");
         }

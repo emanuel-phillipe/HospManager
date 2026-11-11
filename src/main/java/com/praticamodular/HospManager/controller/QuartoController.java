@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.praticamodular.HospManager.dto.*;
 import com.praticamodular.HospManager.service.QuartoService;
 
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "basicAuth")
 @RestController
 @RequestMapping("/quartos")
 @Tag(name = "Quartos", description = "Cadastro de quartos e controle de vagas")

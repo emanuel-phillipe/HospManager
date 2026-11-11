@@ -17,7 +17,12 @@ public abstract class Consulta extends Atendimento {
 
     public void confirmar() { trocarStatus(StatusConsulta.CONFIRMADA); }
 
-    public void iniciar() { trocarStatus(StatusConsulta.EM_ATENDIMENTO); }
+    public void iniciar() {
+        ProfissionalSaude medico = getResponsavel();
+        if (medico == null || !medico.isAtivo()) throw new RegraNegocioException("Médico responsável deve estar ativo");
+        if (medico.possuiAtendimentoEmAndamento(id)) throw new RegraNegocioException("Médico já está atendendo outro paciente");
+        trocarStatus(StatusConsulta.EM_ATENDIMENTO);
+    }
 
     public void concluir(String observacoes) {
         if (observacoes == null || observacoes.isBlank()) {
@@ -56,6 +61,9 @@ public abstract class Consulta extends Atendimento {
         }
         validarModalidade();
         exigirDataHoraFutura();
+        if (medico.possuiConflito(data, horario, id)) {
+            throw new RegraNegocioException("Médico já possui atendimento neste horário");
+        }
         if (!medicoDisponivel(medico)) {
             throw new RegraNegocioException("Médico não está disponível nesse dia e horário");
         }

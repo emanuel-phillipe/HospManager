@@ -30,14 +30,24 @@ public class Quarto {
     public int getAndar() { return andar; }
     public void setAndar(int andar) { this.andar = andar; }
     public int getCapacidadeMaxima() { return capacidadeMaxima; }
-    public void setCapacidadeMaxima(int capacidadeMaxima) { this.capacidadeMaxima = capacidadeMaxima; }
+    public void setCapacidadeMaxima(int capacidadeMaxima) {
+        if (capacidadeMaxima < 1 || capacidadeMaxima < pacientesInternados) {
+            throw new RegraNegocioException("Capacidade deve ser positiva e comportar os pacientes internados");
+        }
+        this.capacidadeMaxima = capacidadeMaxima;
+        atualizarSituacao();
+    }
     public TipoQuarto getTipo() { return tipo; }
-    public void setTipo(TipoQuarto tipo) { this.tipo = tipo; }
+    public void setTipo(TipoQuarto tipo) {
+        if (tipo == null) throw new RegraNegocioException("Tipo do quarto é obrigatório");
+        tipo.validarCapacidade(capacidadeMaxima);
+        this.tipo = tipo;
+    }
     public SituacaoQuarto getSituacao() { return situacao; }
     public void setSituacao(SituacaoQuarto situacao) { this.situacao = situacao; }
     public int getPacientesInternados() { return pacientesInternados; }
     public void setPacientesInternados(int pacientesInternados) {
-        if (pacientesInternados < 0) throw new IllegalArgumentException("Quantidade de pacientes não pode ser negativa");
+        if (pacientesInternados < 0 || pacientesInternados > capacidadeMaxima) throw new RegraNegocioException("Ocupação deve estar entre zero e a capacidade máxima");
         this.pacientesInternados = pacientesInternados;
         atualizarSituacao();
     }

@@ -79,9 +79,7 @@ public abstract class ProfissionalSaude extends Pessoa {
         return false;
     }
 
-    public String getAtuacao() {
-        return especialidade == null ? "" : especialidade.name();
-    }
+    public abstract String getAtuacao();
 
     public boolean estaDisponivel(LocalDate data, LocalTime horario) {
         return disponibilidades != null && disponibilidades.stream().anyMatch(d -> d.cobre(data, horario));
@@ -90,6 +88,13 @@ public abstract class ProfissionalSaude extends Pessoa {
     @Transient
     private final List<Atendimento> atendimentos = new ArrayList<>();
 
+    public List<Atendimento> getAtendimentos() { return List.copyOf(atendimentos); }
+
+    public void carregarAgenda(List<? extends Atendimento> agenda) {
+        atendimentos.clear();
+        atendimentos.addAll(agenda);
+    }
+
     public void registrarAtendimento(Atendimento atendimento) {
         if (atendimento == null) {
             throw new IllegalArgumentException("Atendimento é obrigatório");
@@ -97,16 +102,27 @@ public abstract class ProfissionalSaude extends Pessoa {
         if (!atendimentos.contains(atendimento)) atendimentos.add(atendimento);
     }
 
+    public boolean possuiAtendimentoEmAndamento(String ignorarId) {
+        return atendimentos.stream().filter(a -> ignorarId == null || !ignorarId.equals(a.getId()))
+                .anyMatch(Atendimento::estaEmAndamento);
+    }
+
     public boolean possuiConflito(LocalDate data, LocalTime horario) {
-        return atendimentos.stream().anyMatch(a -> {
+        return possuiConflito(data, horario, null);
+    }
+
+    public boolean possuiConflito(LocalDate data, LocalTime horario, String ignorarId) {
+        return atendimentos.stream().filter(a -> ignorarId == null || !ignorarId.equals(a.getId())).anyMatch(a -> {
             boolean ativo = switch (a) {
                 case Consulta c -> !c.getStatus().isFinal();
                 case ProcedimentoCirurgico p -> !p.getStatus().isFinal();
                 case AtendimentoEmergencia e -> !e.getStatus().isFinal();
                 default -> true;
             };
-            return ativo && Objects.equals(a.getData(), data)
-                    && Objects.equals(a.getHorario(), horario);
+            return ativo && ((a instanceof AtendimentoEmergencia e
+                    && e.getStatus() == com.praticamodular.HospManager.model.enums.StatusEmergencia.EM_ATENDIMENTO)
+                    || (Objects.equals(a.getData(), data) && a.getHorario() != null && horario != null
+                    && a.getHorario().withSecond(0).withNano(0).equals(horario.withSecond(0).withNano(0))));
         });
     }
 }
