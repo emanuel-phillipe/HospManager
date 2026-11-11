@@ -1,4 +1,10 @@
-package hospital;
+package com.praticamodular.HospManager.model;
+
+import com.praticamodular.HospManager.exception.RegraNegocioException;
+import com.praticamodular.HospManager.exception.TransicaoInvalidaException;
+import com.praticamodular.HospManager.model.enums.PrioridadeEmergencia;
+import com.praticamodular.HospManager.model.enums.StatusEmergencia;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,14 +20,18 @@ public class AtendimentoEmergencia extends Atendimento implements Comparable<Ate
     private StatusEmergencia status = StatusEmergencia.AGUARDANDO_AVALIACAO;
     private ProfissionalSaude medico; // 0..1: só definido ao iniciar o atendimento
 
-    public AtendimentoEmergencia(int id, Paciente paciente, PrioridadeEmergencia prioridade,
+    public AtendimentoEmergencia(String id, Paciente paciente, PrioridadeEmergencia prioridade,
                                  LocalDateTime chegada, String observacoes) {
-        super(id, paciente, exigirChegada(chegada).toLocalDate(), chegada.toLocalTime(), observacoes);
+        this.id = id;
+        this.pacienteId = paciente == null ? null : paciente.getId();
+        this.data = exigirChegada(chegada).toLocalDate();
+        this.horario = chegada.toLocalTime();
+        this.observacoes = observacoes;
         this.prioridade = prioridade;
         validarCondicoes();
     }
 
-    public AtendimentoEmergencia(int id, Paciente paciente, PrioridadeEmergencia prioridade, String observacoes) {
+    public AtendimentoEmergencia(String id, Paciente paciente, PrioridadeEmergencia prioridade, String observacoes) {
         this(id, paciente, prioridade, LocalDateTime.now(), observacoes);
     }
 
@@ -58,7 +68,7 @@ public class AtendimentoEmergencia extends Atendimento implements Comparable<Ate
 
     @Override
     public void validarCondicoes() {
-        if (paciente == null) throw new RegraNegocioException("Todo atendimento exige um paciente");
+        if (pacienteId == null || pacienteId.isBlank()) throw new RegraNegocioException("Todo atendimento exige um paciente");
         if (prioridade == null) throw new RegraNegocioException("Prioridade é obrigatória");
         if (data == null || horario == null) throw new RegraNegocioException("Data/horário de chegada são obrigatórios");
         if (status != StatusEmergencia.AGUARDANDO_AVALIACAO && medico == null) {
@@ -94,7 +104,7 @@ public class AtendimentoEmergencia extends Atendimento implements Comparable<Ate
         if (c != 0) return c;
         c = this.getChegada().compareTo(o.getChegada());                               // FIFO dentro da prioridade
         if (c != 0) return c;
-        return Integer.compare(this.id, o.id);
+        return this.id.compareTo(o.id);
     }
 
     public PrioridadeEmergencia getPrioridade() { return prioridade; }

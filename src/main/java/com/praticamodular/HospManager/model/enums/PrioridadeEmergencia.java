@@ -1,4 +1,6 @@
-package hospital;
+package com.praticamodular.HospManager.model.enums;
+
+
 
 /** Classificação de risco do paciente na emergência. Quanto maior o nível, mais urgente. */
 public enum PrioridadeEmergencia {

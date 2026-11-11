@@ -1,4 +1,6 @@
-package hospital;
+package com.praticamodular.HospManager.model.enums;
+
+
 
 public enum TipoCirurgia {
     /** Planejada com antecedência. */

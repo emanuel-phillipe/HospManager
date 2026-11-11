@@ -1,9 +1,16 @@
-package hospital;
+package com.praticamodular.HospManager.service;
+
+import com.praticamodular.HospManager.exception.RegraNegocioException;
+import com.praticamodular.HospManager.model.enums.StatusEmergencia;
+import com.praticamodular.HospManager.model.AtendimentoEmergencia;
+import com.praticamodular.HospManager.model.ProfissionalSaude;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Objects;
 
 /**
  * Fila de emergência organizada por prioridade e, dentro dela, por ordem de chegada.
@@ -45,7 +52,7 @@ public class FilaEmergencia {
         return proximo;
     }
 
-    public void concluir(int id, String obs) {
+    public void concluir(String id, String obs) {
         buscarPorId(id)
                 .orElseThrow(() -> new NoSuchElementException("Atendimento não encontrado: " + id))
                 .concluir(obs);
@@ -56,16 +63,16 @@ public class FilaEmergencia {
     public List<AtendimentoEmergencia> concluidos()   { return filtrar(StatusEmergencia.CONCLUIDO); }
 
     /** Posição (1 = próximo) na fila de espera, ou -1 se não está aguardando. */
-    public int posicao(int id) {
+    public int posicao(String id) {
         List<AtendimentoEmergencia> fila = aguardando();
         for (int i = 0; i < fila.size(); i++) {
-            if (fila.get(i).getId() == id) return i + 1;
+            if (Objects.equals(fila.get(i).getId(), id)) return i + 1;
         }
         return -1;
     }
 
-    public Optional<AtendimentoEmergencia> buscarPorId(int id) {
-        return atendimentos.stream().filter(a -> a.getId() == id).findFirst();
+    public Optional<AtendimentoEmergencia> buscarPorId(String id) {
+        return atendimentos.stream().filter(a -> Objects.equals(a.getId(), id)).findFirst();
     }
 
     private List<AtendimentoEmergencia> filtrar(StatusEmergencia status) {

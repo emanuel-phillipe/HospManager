@@ -1,4 +1,6 @@
-package hospital;
+package com.praticamodular.HospManager.model.enums;
+
+
 
 /**
  * Ciclo de vida de um procedimento cirúrgico:

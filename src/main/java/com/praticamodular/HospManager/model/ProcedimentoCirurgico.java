@@ -1,4 +1,10 @@
-package hospital;
+package com.praticamodular.HospManager.model;
+
+import com.praticamodular.HospManager.exception.RegraNegocioException;
+import com.praticamodular.HospManager.exception.TransicaoInvalidaException;
+import com.praticamodular.HospManager.model.enums.TipoCirurgia;
+import com.praticamodular.HospManager.model.enums.StatusProcedimento;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,10 +28,14 @@ public class ProcedimentoCirurgico extends Atendimento {
     private LocalTime horarioEfetivo;
     private StatusProcedimento status = StatusProcedimento.AGENDADO;
 
-    public ProcedimentoCirurgico(int id, Paciente paciente, LocalDate data, LocalTime horario,
+    public ProcedimentoCirurgico(String id, Paciente paciente, LocalDate data, LocalTime horario,
                                  String observacoes, Cirurgiao cirurgiao, String descricao,
                                  TipoCirurgia tipoCirurgia, String observacoesPreOperatorias) {
-        super(id, paciente, data, horario, observacoes);
+        this.id = id;
+        this.pacienteId = paciente == null ? null : paciente.getId();
+        this.data = data;
+        this.horario = horario;
+        this.observacoes = observacoes;
         this.cirurgiao = cirurgiao;
         this.descricao = descricao;
         this.tipoCirurgia = tipoCirurgia;
@@ -96,7 +106,7 @@ public class ProcedimentoCirurgico extends Atendimento {
     }
 
     private void validarDadosObrigatorios() {
-        if (paciente == null) throw new RegraNegocioException("Paciente é obrigatório");
+        if (pacienteId == null || pacienteId.isBlank()) throw new RegraNegocioException("Paciente é obrigatório");
         if (cirurgiao == null) throw new RegraNegocioException("Cirurgião é obrigatório");
         if (tipoCirurgia == null) throw new RegraNegocioException("Tipo de cirurgia é obrigatório");
         if (estaVazio(descricao)) throw new RegraNegocioException("Descrição é obrigatória");
