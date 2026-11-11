@@ -2,13 +2,22 @@
 package com.praticamodular.HospManager.model;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Disponibilidade {
-
+    private int id;
     private DayOfWeek diaSemana;
     private LocalTime horaInicio;
     private LocalTime horaFim;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public DayOfWeek getDiaSemana() {
         return diaSemana;
@@ -33,4 +42,24 @@ public class Disponibilidade {
     public void setHoraFim(LocalTime horaFim) {
         this.horaFim = horaFim;
     }
+
+    public boolean cobre(LocalDate data, LocalTime horario) {
+        return data.getDayOfWeek() == diaSemana
+                && !horario.isBefore(horaInicio)
+                && !horario.isAfter(horaFim);
+    }
+
+
+public boolean conflitaCom(Disponibilidade outra) {
+
+    // Se forem dias diferentes, não existe conflito
+    if (this.diaSemana != outra.diaSemana) {
+        return false;
+    }
+
+    // Verifica se os horários se sobrepõem
+    return this.horaInicio.isBefore(outra.horaFim)
+            && outra.horaInicio.isBefore(this.horaFim);
+}
+
 }

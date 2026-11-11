@@ -4,49 +4,36 @@ package com.praticamodular.HospManager.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.praticamodular.HospManager.model.enums.Especialidade;
-
-@Document("profissionais")
 public abstract class ProfissionalSaude extends Pessoa {
 
-    @Indexed(unique = true)
-    private String registroProfissional;
-    private Especialidade especialidade;
-    private List<Disponibilidade> disponibilidades = new ArrayList<>();
-    private boolean ativo = true;
+    protected String registroProfissional;
+    protected List<Disponibilidade> disponibilidades = new ArrayList<>();
 
-    public String getRegistroProfissional() {
-        return registroProfissional;
+    public boolean estaDisponivel(Disponibilidade disponibilidade) {
+        if (disponibilidades == null) {
+            return false;
+        }
+
+        return disponibilidades.contains(disponibilidade);
     }
 
-    public void setRegistroProfissional(String registroProfissional) {
-        this.registroProfissional = registroProfissional;
+    public boolean possuiConflito() {
+        if (disponibilidades == null) {
+            return false;
+        }
+
+        for (int i = 0; i < disponibilidades.size(); i++) {
+            for (int j = i + 1; j < disponibilidades.size(); j++) {
+
+                if (disponibilidades.get(i)
+                        .conflitaCom(disponibilidades.get(j))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
-    public Especialidade getEspecialidade() {
-        return especialidade;
-    }
-
-    public void setEspecialidade(Especialidade especialidade) {
-        this.especialidade = especialidade;
-    }
-
-    public List<Disponibilidade> getDisponibilidades() {
-        return disponibilidades;
-    }
-
-    public void setDisponibilidades(List<Disponibilidade> disponibilidades) {
-        this.disponibilidades = disponibilidades;
-    }
-
-    public boolean isAtivo() {
-        return ativo;
-    }
-
-    public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
-    }
+    public abstract String getAtuacao();
 }
